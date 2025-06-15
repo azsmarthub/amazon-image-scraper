@@ -1,0 +1,306 @@
+/* styles.css - Styles for injected UI elements */
+
+/* Status message that appears at top of page */
+.scraper-status {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    animation: slideIn 0.3s ease-out;
+}
+
+.scraper-status-success {
+    background: #4caf50;
+    color: white;
+}
+
+.scraper-status-error {
+    background: #f44336;
+    color: white;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Floating action button */
+.scraper-floating-button {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #FF9900;
+    border: none;
+    box-shadow: 0 4px 12px rgba(255, 153, 0, 0.4);
+    cursor: pointer;
+    font-size: 24px;
+    z-index: 9999;
+    transition: all 0.3s ease;
+}
+
+.scraper-floating-button:hover {
+    background: #ff8800;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 153, 0, 0.5);
+}
+
+.scraper-floating-button:active {
+    transform: translateY(0);
+}
+
+/* Main UI container */
+.scraper-ui-container {
+    position: fixed;
+    right: 20px;
+    top: 80px;
+    width: 400px;
+    max-height: 80vh;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    z-index: 10001;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    opacity: 0;
+    transform: translateX(420px);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.scraper-ui-container.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* UI Header */
+.scraper-ui-header {
+    background: #232F3E;
+    color: white;
+    padding: 16px 20px;
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.scraper-ui-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.scraper-ui-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.scraper-ui-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* UI Content */
+.scraper-ui-content {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Status section */
+.scraper-ui-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.scraper-ui-status.status-extracting {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.scraper-ui-status.status-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.scraper-ui-status.status-error {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.scraper-ui-status.status-info {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.status-icon {
+    font-size: 20px;
+}
+
+.status-text {
+    flex: 1;
+    font-size: 14px;
+}
+
+/* Action buttons */
+.scraper-ui-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.scraper-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.scraper-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.scraper-btn-primary {
+    background: #FF9900;
+    color: white;
+}
+
+.scraper-btn-primary:hover:not(:disabled) {
+    background: #ff8800;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 153, 0, 0.3);
+}
+
+.scraper-btn-secondary {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.scraper-btn-secondary:hover:not(:disabled) {
+    background: #e0e0e0;
+}
+
+/* Results section */
+.scraper-ui-results h4 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    color: #232F3E;
+}
+
+.image-count {
+    color: #FF9900;
+    font-weight: 700;
+}
+
+/* Image preview container */
+.image-preview-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.image-preview-item {
+    position: relative;
+    aspect-ratio: 1;
+    background: #f5f5f5;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.image-preview-item:hover {
+    transform: scale(1.05);
+}
+
+.image-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-number {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+/* Loading spinner for async operations */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.scraper-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #FF9900;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Ensure our styles don't interfere with Amazon */
+.scraper-ui-container * {
+    box-sizing: border-box;
+}
+
+/* Mobile responsive */
+@media (max-width: 600px) {
+    .scraper-ui-container {
+        width: calc(100% - 20px);
+        right: 10px;
+        left: 10px;
+        top: 60px;
+    }
+    
+    .scraper-floating-button {
+        bottom: 20px;
+        right: 20px;
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+}
