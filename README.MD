@@ -24,6 +24,7 @@ amazon-image-scraper/
 └── README.md
 ```
 New Update Structure
+```
 amazon-image-scraper/
 ├── manifest.json
 ├── src/
@@ -44,3 +45,4 @@ amazon-image-scraper/
 │           ├── icon-16.png
 │           ├── icon-48.png
 │           └── icon-128.png
+```
