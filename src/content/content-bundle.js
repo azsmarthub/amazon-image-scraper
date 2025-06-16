@@ -46,7 +46,8 @@ const CONSTANTS = {
         SESSION_ERROR: 'sessionError',
         TAB_READY: 'tabReady',
         EXTRACT_IMAGES: 'extractImages',
-        IMAGES_EXTRACTED: 'imagesExtracted'
+        IMAGES_EXTRACTED: 'imagesExtracted',
+        SEND_SELECTED_IMAGES: 'sendSelectedImages'
     },
     
     // Patterns
@@ -55,7 +56,14 @@ const CONSTANTS = {
     // Image URL patterns
     IMAGE_PATTERNS: {
         THUMBNAIL: /_AC_[A-Z]{2}[0-9]+_/,
-        FULL_SIZE: '_AC_SL1500_'
+        FULL_SIZE: '_AC_SL1500_',
+        HIGH_RES: /_S[LX]1[0-9]{3}_/
+    },
+    
+    // Image sizes
+    IMAGE_SIZE: {
+        LARGE_MIN_WIDTH: 1000,
+        LARGE_MIN_HEIGHT: 1000
     }
 };
 
@@ -89,6 +97,25 @@ function extractASINFromUrl(url) {
     }
     
     return null;
+}
+
+// Copy text to clipboard
+async function copyToClipboard(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        return true;
+    } catch (err) {
+        // Fallback method
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        return true;
+    }
 }
 
 // ==================== IMAGE PARSER ====================
@@ -388,6 +415,113 @@ function debugImageStructure() {
     console.groupEnd();
 }
 
+// ==================== IMAGE SELECTOR ====================
+class ImageSelector {
+    constructor() {
+        this.images = [];
+        this.selected = new Set();
+        this.filteredIndices = new Set();
+        this.filters = {
+            large: true,
+            hiRes: true
+        };
+    }
+    
+    setImages(images) {
+        this.images = images;
+        this.selected.clear();
+        this.applyFilters();
+    }
+    
+    toggleImage(index) {
+        if (this.selected.has(index)) {
+            this.selected.delete(index);
+        } else {
+            this.selected.add(index);
+        }
+        this.updateSelectionCount();
+    }
+    
+    selectAll() {
+        this.filteredIndices.forEach(index => {
+            this.selected.add(index);
+        });
+        this.updateSelectionCount();
+    }
+    
+    selectNone() {
+        this.selected.clear();
+        this.updateSelectionCount();
+    }
+    
+    setFilter(filterName, value) {
+        this.filters[filterName] = value;
+        this.applyFilters();
+    }
+    
+    applyFilters() {
+        this.filteredIndices.clear();
+        
+        this.images.forEach((url, index) => {
+            let shouldShow = true;
+            
+            // Check Large filter
+            if (this.filters.large && !this.isLargeImage(url)) {
+                shouldShow = false;
+            }
+            
+            // Check HiRes filter
+            if (this.filters.hiRes && !this.isHiResImage(url)) {
+                shouldShow = false;
+            }
+            
+            if (shouldShow) {
+                this.filteredIndices.add(index);
+            }
+        });
+        
+        // Remove selections for hidden images
+        this.selected = new Set([...this.selected].filter(i => this.filteredIndices.has(i)));
+        this.updateSelectionCount();
+    }
+    
+    isLargeImage(url) {
+        // Check if URL contains size indicators for large images
+        return url.includes('_SL1') || url.includes('_SX1') || 
+               url.includes('_AC_SL1') || url.includes('_AC_SX1');
+    }
+    
+    isHiResImage(url) {
+        return url.includes('_SL1500_') || url.includes('_SX1500_') || 
+               url.includes('_SL2000_') || url.includes('_SX2000_');
+    }
+    
+    getSelectedImages() {
+        return [...this.selected].map(index => this.images[index]);
+    }
+    
+    updateSelectionCount() {
+        const countEl = document.querySelector('.selection-count');
+        if (countEl) {
+            const selectedCount = this.selected.size;
+            const totalCount = this.filteredIndices.size;
+            countEl.textContent = `Selected: ${selectedCount} of ${totalCount}`;
+        }
+    }
+    
+    generateMarkdown() {
+        const selectedImages = this.getSelectedImages();
+        const productTitle = document.querySelector('#productTitle')?.textContent.trim() || 'Product Image';
+        
+        return selectedImages.map((url, index) => {
+            return `![${productTitle} - Image ${index + 1}](${url})`;
+        }).join('\n\n');
+    }
+}
+
+// Global image selector instance
+const imageSelector = new ImageSelector();
+
 // ==================== UI INJECTOR ====================
 // UI State
 let uiState = {
@@ -423,8 +557,33 @@ function createUIContainer() {
                 </button>
             </div>
             <div class="scraper-ui-results" style="display: none;">
-                <h4>Extracted Images: <span class="image-count">0</span></h4>
-                <div class="image-preview-container"></div>
+                <div class="results-header">
+                    <h4>Extracted Images: <span class="image-count">0</span></h4>
+                    <div class="filter-section">
+                        <label class="filter-checkbox">
+                            <input type="checkbox" id="filterLarge" checked>
+                            <span>Large (>1000px)</span>
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" id="filterHiRes" checked>
+                            <span>Hi-Res</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="selection-controls">
+                    <button class="scraper-btn scraper-btn-small" id="selectAllBtn">Select All</button>
+                    <button class="scraper-btn scraper-btn-small" id="selectNoneBtn">Select None</button>
+                    <span class="selection-count">Selected: 0 of 0</span>
+                </div>
+                <div class="image-grid-container"></div>
+                <div class="action-controls">
+                    <button class="scraper-btn scraper-btn-primary" id="copyMarkdownBtn">
+                        📋 Copy as Markdown
+                    </button>
+                    <button class="scraper-btn scraper-btn-primary" id="sendSelectedBtn">
+                        📤 Send Selected
+                    </button>
+                </div>
             </div>
         </div>
     `;
@@ -451,6 +610,36 @@ function setupUIEventListeners(container) {
     // Debug button
     const debugBtn = container.querySelector('#debugBtn');
     debugBtn.addEventListener('click', handleDebugClick);
+    
+    // Selection controls
+    const selectAllBtn = container.querySelector('#selectAllBtn');
+    const selectNoneBtn = container.querySelector('#selectNoneBtn');
+    if (selectAllBtn) selectAllBtn.addEventListener('click', () => {
+        imageSelector.selectAll();
+        updateImageGrid();
+    });
+    if (selectNoneBtn) selectNoneBtn.addEventListener('click', () => {
+        imageSelector.selectNone();
+        updateImageGrid();
+    });
+    
+    // Filter checkboxes
+    const filterLarge = container.querySelector('#filterLarge');
+    const filterHiRes = container.querySelector('#filterHiRes');
+    if (filterLarge) filterLarge.addEventListener('change', (e) => {
+        imageSelector.setFilter('large', e.target.checked);
+        updateImageGrid();
+    });
+    if (filterHiRes) filterHiRes.addEventListener('change', (e) => {
+        imageSelector.setFilter('hiRes', e.target.checked);
+        updateImageGrid();
+    });
+    
+    // Action buttons
+    const copyMarkdownBtn = container.querySelector('#copyMarkdownBtn');
+    const sendSelectedBtn = container.querySelector('#sendSelectedBtn');
+    if (copyMarkdownBtn) copyMarkdownBtn.addEventListener('click', handleCopyMarkdown);
+    if (sendSelectedBtn) sendSelectedBtn.addEventListener('click', handleSendSelected);
 }
 
 // Show UI
@@ -490,18 +679,8 @@ async function handleExtractClick() {
         
         if (images.length > 0) {
             updateUIStatus('success', `Found ${images.length} images!`);
-            showImagePreviews(images);
-            
-            // Send to background
-            chrome.runtime.sendMessage({
-                action: 'productDataExtracted',
-                asin: currentASIN,
-                data: {
-                    images: images,
-                    title: document.querySelector('#productTitle')?.textContent.trim() || '',
-                    url: window.location.href
-                }
-            });
+            imageSelector.setImages(images);
+            showImageGrid(images);
         } else {
             updateUIStatus('error', 'No images found');
         }
@@ -516,6 +695,58 @@ async function handleExtractClick() {
 function handleDebugClick() {
     debugImageStructure();
     updateUIStatus('info', 'Debug info logged to console');
+}
+
+// Handle copy markdown
+async function handleCopyMarkdown() {
+    const markdown = imageSelector.generateMarkdown();
+    
+    if (!markdown) {
+        updateUIStatus('error', 'No images selected');
+        return;
+    }
+    
+    const success = await copyToClipboard(markdown);
+    if (success) {
+        updateUIStatus('success', 'Copied to clipboard!');
+    } else {
+        updateUIStatus('error', 'Failed to copy');
+    }
+}
+
+// Handle send selected
+async function handleSendSelected() {
+    const selectedImages = imageSelector.getSelectedImages();
+    
+    if (selectedImages.length === 0) {
+        updateUIStatus('error', 'No images selected');
+        return;
+    }
+    
+    updateUIStatus('extracting', 'Sending images...');
+    
+    try {
+        // Send to background script
+        const response = await chrome.runtime.sendMessage({
+            action: 'sendSelectedImages',
+            asin: currentASIN,
+            data: {
+                images: selectedImages,
+                title: document.querySelector('#productTitle')?.textContent.trim() || '',
+                url: window.location.href,
+                selectedCount: selectedImages.length,
+                totalCount: imageSelector.images.length
+            }
+        });
+        
+        if (response.success) {
+            updateUIStatus('success', 'Images sent successfully!');
+        } else {
+            throw new Error(response.error || 'Failed to send');
+        }
+    } catch (error) {
+        updateUIStatus('error', `Error: ${error.message}`);
+    }
 }
 
 // Update UI status
@@ -536,35 +767,66 @@ function updateUIStatus(type, message) {
     statusEl.querySelector('.status-text').textContent = message;
 }
 
-// Show image previews (basic version for Phase 2)
-function showImagePreviews(images) {
+// Show image grid with selection
+function showImageGrid(images) {
     const resultsEl = document.querySelector('.scraper-ui-results');
-    const containerEl = document.querySelector('.image-preview-container');
     const countEl = document.querySelector('.image-count');
     
-    if (!resultsEl || !containerEl) return;
+    if (!resultsEl) return;
     
     // Update count
     countEl.textContent = images.length;
     
-    // Clear existing previews
+    // Show results section
+    resultsEl.style.display = 'block';
+    
+    // Update grid
+    updateImageGrid();
+}
+
+// Update image grid display
+function updateImageGrid() {
+    const containerEl = document.querySelector('.image-grid-container');
+    if (!containerEl) return;
+    
+    // Clear existing grid
     containerEl.innerHTML = '';
     
-    // Show first 6 images as preview
-    const previewImages = images.slice(0, 6);
-    
-    previewImages.forEach((url, index) => {
-        const preview = document.createElement('div');
-        preview.className = 'image-preview-item';
-        preview.innerHTML = `
+    // Display filtered images
+    imageSelector.images.forEach((url, index) => {
+        if (!imageSelector.filteredIndices.has(index)) return;
+        
+        const gridItem = document.createElement('div');
+        gridItem.className = 'image-grid-item';
+        if (imageSelector.selected.has(index)) {
+            gridItem.classList.add('selected');
+        }
+        
+        gridItem.innerHTML = `
+            <div class="image-checkbox">
+                <input type="checkbox" id="img-${index}" ${imageSelector.selected.has(index) ? 'checked' : ''}>
+                <label for="img-${index}"></label>
+            </div>
             <img src="${url}" alt="Product image ${index + 1}" loading="lazy">
             <span class="image-number">${index + 1}</span>
         `;
-        containerEl.appendChild(preview);
+        
+        // Add click handler for checkbox
+        const checkbox = gridItem.querySelector('input[type="checkbox"]');
+        checkbox.addEventListener('change', (e) => {
+            imageSelector.toggleImage(index);
+            if (e.target.checked) {
+                gridItem.classList.add('selected');
+            } else {
+                gridItem.classList.remove('selected');
+            }
+        });
+        
+        containerEl.appendChild(gridItem);
     });
     
-    // Show results section
-    resultsEl.style.display = 'block';
+    // Update selection count
+    imageSelector.updateSelectionCount();
 }
 
 // Create floating action button

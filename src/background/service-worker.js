@@ -34,6 +34,9 @@ async function handleMessage(request, sender) {
         case 'productDataExtracted':
             return await handleExtractedData(sender.tab?.id, request.asin, request.data);
             
+        case 'sendSelectedImages':
+            return await handleSelectedImages(request.asin, request.data);
+            
         default:
             throw new Error(`Unknown action: ${request.action}`);
     }
@@ -230,6 +233,55 @@ async function handleExtractedData(tabId, asin, data) {
     }
     
     return { success: true };
+}
+
+// Handle selected images from content script
+async function handleSelectedImages(asin, data) {
+    try {
+        // Get webhook URL from settings
+        const settings = await chrome.storage.local.get(['settings']);
+        const webhookUrl = settings.settings?.webhookUrl;
+        
+        if (!webhookUrl) {
+            return { success: false, error: 'No webhook URL configured' };
+        }
+        
+        // Prepare payload
+        const payload = {
+            sessionId: `manual-${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            asin: asin,
+            selectedImages: true,
+            totalImages: data.totalCount,
+            selectedCount: data.selectedCount,
+            products: [{
+                asin: asin,
+                title: data.title,
+                url: data.url,
+                images: data.images,
+                imageCount: data.images.length
+            }]
+        };
+        
+        // Send to webhook
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Webhook returned ${response.status}`);
+        }
+        
+        return { success: true };
+        
+    } catch (error) {
+        console.error('Failed to send selected images:', error);
+        return { success: false, error: error.message };
+    }
 }
 
 // Send results to webhook

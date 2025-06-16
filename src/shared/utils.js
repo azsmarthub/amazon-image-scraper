@@ -117,6 +117,25 @@ function extractASINFromUrl(url) {
     return null;
 }
 
+// Copy text to clipboard
+async function copyToClipboard(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        return true;
+    } catch (err) {
+        // Fallback method
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        return true;
+    }
+}
+
 // Make utilities available globally
 if (typeof window === 'undefined') {
     // In service worker context
@@ -133,4 +152,5 @@ if (typeof window === 'undefined') {
     self.safeJsonParse = safeJsonParse;
     self.createAmazonUrl = createAmazonUrl;
     self.extractASINFromUrl = extractASINFromUrl;
+    self.copyToClipboard = copyToClipboard;
 }

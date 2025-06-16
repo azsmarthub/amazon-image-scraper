@@ -45,7 +45,8 @@ const CONSTANTS = {
         SESSION_ERROR: 'sessionError',
         TAB_READY: 'tabReady',
         EXTRACT_IMAGES: 'extractImages',
-        IMAGES_EXTRACTED: 'imagesExtracted'
+        IMAGES_EXTRACTED: 'imagesExtracted',
+        SEND_SELECTED_IMAGES: 'sendSelectedImages'
     },
     
     // Patterns
@@ -54,7 +55,14 @@ const CONSTANTS = {
     // Image URL patterns
     IMAGE_PATTERNS: {
         THUMBNAIL: /_AC_[A-Z]{2}[0-9]+_/,
-        FULL_SIZE: '_AC_SL1500_'
+        FULL_SIZE: '_AC_SL1500_',
+        HIGH_RES: /_S[LX]1[0-9]{3}_/
+    },
+    
+    // Image sizes
+    IMAGE_SIZE: {
+        LARGE_MIN_WIDTH: 1000,
+        LARGE_MIN_HEIGHT: 1000
     }
 };
 
