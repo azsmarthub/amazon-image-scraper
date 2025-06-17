@@ -6,15 +6,16 @@
 </head>
 <body>
     <div class="container">
-        <h1>Amazon Image Scraper</h1>
+        <div class="header-section">
+            <h1>Amazon Image Scraper</h1>
+            <button id="darkModeToggle" class="dark-mode-toggle" title="Toggle Dark Mode">🌙</button>
+        </div>
         
         <div class="input-section">
             <label for="asinInput">Enter ASINs (one per line):</label>
             <textarea 
                 id="asinInput" 
-                placeholder="B07GV2S1GS
-B08N5WRWNB
-B09JQL3NWT"
+                placeholder="B07GV2S1GS&#10;B08N5WRWNB&#10;B09JQL3NWT"
                 rows="5"
             ></textarea>
         </div>
@@ -34,6 +35,10 @@ B09JQL3NWT"
                 id="webhookUrl" 
                 placeholder="https://your-n8n.com/webhook/amazon-images"
             >
+            <div id="webhookStatus" class="webhook-status" style="display: none;">
+                <span class="webhook-indicator"></span>
+                <span class="webhook-text"></span>
+            </div>
         </div>
 
         <div class="button-section">
@@ -47,6 +52,30 @@ B09JQL3NWT"
             <div id="progressBar" class="progress-bar">
                 <div id="progressFill" class="progress-fill"></div>
             </div>
+        </div>
+
+        <div id="advancedControls" class="advanced-controls">
+            <div class="control-group">
+                <button id="exportBtn" class="secondary-btn small-btn" disabled>
+                    📥 Export Results
+                </button>
+                <select id="exportFormat" class="export-format">
+                    <option value="csv">CSV</option>
+                    <option value="json">JSON</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <button id="clearHistoryBtn" class="secondary-btn small-btn">
+                    🗑️ Clear History
+                </button>
+                <span id="processedCount" class="processed-count">0 ASINs processed</span>
+            </div>
+        </div>
+
+        <div id="webhookFailures" class="webhook-failures" style="display: none;">
+            <h3>Failed Webhooks:</h3>
+            <div id="failedList" class="failed-list"></div>
+            <button id="clearFailedBtn" class="secondary-btn small-btn">Clear All</button>
         </div>
     </div>
 
