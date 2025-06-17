@@ -4,22 +4,44 @@ body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
     font-size: 14px;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 .container {
     padding: 20px;
 }
 
-h1 {
-    margin: 0 0 20px 0;
-    font-size: 20px;
-    color: #232F3E;
-    text-align: center;
-    border-bottom: 2px solid #FF9900;
-    padding-bottom: 10px;
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
 }
 
-.input-section, .settings-section, .webhook-section, .button-section, .status-section {
+h1 {
+    margin: 0;
+    font-size: 20px;
+    color: #232F3E;
+    border-bottom: 2px solid #FF9900;
+    padding-bottom: 10px;
+    flex: 1;
+}
+
+.dark-mode-toggle {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.dark-mode-toggle:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.input-section, .settings-section, .webhook-section, .button-section, .status-section, .webhook-failures, .advanced-controls {
     margin-bottom: 20px;
 }
 
@@ -38,6 +60,8 @@ textarea, input[type="text"], input[type="url"], input[type="number"] {
     font-family: inherit;
     font-size: 13px;
     box-sizing: border-box;
+    background: white;
+    color: #333;
 }
 
 textarea {
@@ -112,6 +136,11 @@ button {
     cursor: not-allowed;
 }
 
+.small-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
 .status-section {
     background: #f8f9fa;
     padding: 15px;
@@ -164,4 +193,268 @@ button {
 
 .status-section.error #statusText {
     color: #c62828;
+}
+
+/* Advanced controls */
+.advanced-controls {
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.control-group:last-child {
+    margin-bottom: 0;
+}
+
+.export-format {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.processed-count {
+    font-size: 12px;
+    color: #666;
+    margin-left: auto;
+}
+
+/* Webhook status indicator */
+.webhook-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.webhook-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ccc;
+}
+
+.webhook-status.processing {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.webhook-status.processing .webhook-indicator {
+    background: #1976d2;
+    animation: pulse 1s infinite;
+}
+
+.webhook-status.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.webhook-status.success .webhook-indicator {
+    background: #4caf50;
+}
+
+.webhook-status.error {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.webhook-status.error .webhook-indicator {
+    background: #f44336;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Failed webhooks section */
+.webhook-failures {
+    background: #fff3cd;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ffeaa7;
+}
+
+.webhook-failures h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #856404;
+}
+
+.failed-list {
+    max-height: 150px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+.failed-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    background: white;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    border: 1px solid #ffeaa7;
+}
+
+.failed-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-right: 10px;
+}
+
+.failed-time {
+    font-size: 11px;
+    color: #666;
+}
+
+.failed-error {
+    font-size: 12px;
+    color: #c62828;
+}
+
+.retry-btn {
+    padding: 4px 10px;
+    background: #FF9900;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.retry-btn:hover {
+    background: #ff8800;
+}
+
+/* Dark mode styles */
+body.dark-mode {
+    background: #1e1e1e;
+    color: #e0e0e0;
+}
+
+body.dark-mode .container {
+    background: #1e1e1e;
+}
+
+body.dark-mode h1 {
+    color: #e0e0e0;
+    border-bottom-color: #FF9900;
+}
+
+body.dark-mode label {
+    color: #e0e0e0;
+}
+
+body.dark-mode textarea,
+body.dark-mode input[type="text"],
+body.dark-mode input[type="url"],
+body.dark-mode input[type="number"],
+body.dark-mode .export-format {
+    background: #2d2d2d;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+body.dark-mode .status-section {
+    background: #2d2d2d;
+    border-color: #444;
+}
+
+body.dark-mode .status-section h3 {
+    color: #e0e0e0;
+}
+
+body.dark-mode #statusText {
+    color: #b0b0b0;
+}
+
+body.dark-mode .progress-bar {
+    background: #444;
+}
+
+body.dark-mode .secondary-btn {
+    background: #2d2d2d;
+    color: #e0e0e0;
+    border: 1px solid #444;
+}
+
+body.dark-mode .secondary-btn:hover:not(:disabled) {
+    background: #3d3d3d;
+}
+
+body.dark-mode .advanced-controls {
+    background: #2d2d2d;
+    border-color: #444;
+}
+
+body.dark-mode .processed-count {
+    color: #b0b0b0;
+}
+
+body.dark-mode .webhook-failures {
+    background: #4a3c28;
+    border-color: #6d5a41;
+}
+
+body.dark-mode .webhook-failures h3 {
+    color: #ffc947;
+}
+
+body.dark-mode .failed-item {
+    background: #2d2d2d;
+    border-color: #6d5a41;
+}
+
+body.dark-mode .dark-mode-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Scrollbar styling */
+.failed-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.failed-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.failed-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.failed-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+body.dark-mode .failed-list::-webkit-scrollbar-track {
+    background: #2d2d2d;
+}
+
+body.dark-mode .failed-list::-webkit-scrollbar-thumb {
+    background: #555;
+}
+
+body.dark-mode .failed-list::-webkit-scrollbar-thumb:hover {
+    background: #777;
 }
